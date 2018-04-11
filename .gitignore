@@ -19,3 +19,5 @@
 /benchmarks/harness/src/org/dacapo/parser/SimpleCharStream.java
 /benchmarks/harness/src/org/dacapo/parser/Token.java
 /benchmarks/harness/src/org/dacapo/parser/TokenMgrError.java
+/benchmarks/dacapo/
+/benchmarks/debugDump/
