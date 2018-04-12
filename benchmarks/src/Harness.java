@@ -45,7 +45,6 @@ public class Harness {
 
   private static ClassLoader makeHarnessClassLoader() throws MalformedURLException, URISyntaxException {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    System.out.println(classLoader.getClass().getName());
 
     String dacapoCallbackClasspath = System
         .getProperty(CALLBACK_CLASSPATH_PROPERTY);
@@ -71,8 +70,7 @@ public class Harness {
       urls = new URL[] { harnessJarURL };
 
     URLClassLoader urlLoader = URLClassLoader.newInstance(urls, classLoader);
-    ((RewriterClassLoader) classLoader).insertClassPath(
-        new LoaderClassPath(urlLoader));
+    ((RewriterClassLoader) classLoader).insertLoaderClassPath(urlLoader);
     return classLoader;
   }
 }
