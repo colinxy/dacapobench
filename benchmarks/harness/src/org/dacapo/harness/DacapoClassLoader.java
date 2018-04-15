@@ -3,7 +3,7 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Apache License v2.0.
  * You may obtain the license at
- * 
+ *
  *    http://www.opensource.org/licenses/apache2.0.php
  */
 package org.dacapo.harness;
@@ -18,21 +18,23 @@ import java.util.List;
 
 import org.dacapo.parser.Config;
 
+import jrewriter.RewriterClassLoader;
+
 /**
  * Custom class loader for the dacapo benchmarks. Instances of this classloader
  * are created by passing a list of jar files. This allows us to package a
  * benchmark as a set of jar files, rather than having to mix the classes for
  * all the benchmarks into the dacapo jar file.
- * 
+ *
  * @date $Date: 2009-12-24 11:19:36 +1100 (Thu, 24 Dec 2009) $
  * @id $Id: DacapoClassLoader.java 738 2009-12-24 00:19:36Z steveb-oss $
  */
-public class DacapoClassLoader extends URLClassLoader {
+public class DacapoClassLoader extends RewriterClassLoader {
 
   /**
    * Factory method to create the class loader to be used for each invocation of
    * this benchmark
-   * 
+   *
    * @param config The config file, which contains information about the jars
    * this benchmark depends on
    * @param scratch The scratch directory (in which the jars will be located)
@@ -50,7 +52,7 @@ public class DacapoClassLoader extends URLClassLoader {
           System.out.println("  " + url.toString());
         }
       }
-      rtn = new DacapoClassLoader(urls, ClassLoader.getSystemClassLoader());
+      rtn = new DacapoClassLoader(urls);
     } catch (Exception e) {
       System.err.println("Unable to create loader for " + config.name + ":");
       e.printStackTrace();
@@ -63,7 +65,7 @@ public class DacapoClassLoader extends URLClassLoader {
    * @param urls
    */
   public DacapoClassLoader(URL[] urls) {
-    super(urls);
+    this(urls, DacapoClassLoader.class.getClassLoader());
   }
 
   /**
@@ -71,7 +73,9 @@ public class DacapoClassLoader extends URLClassLoader {
    * @param parent
    */
   public DacapoClassLoader(URL[] urls, ClassLoader parent) {
-    super(urls, parent);
+    super(parent);
+    URLClassLoader urlLoader = URLClassLoader.newInstance(urls, parent);
+    insertLoaderClassPath(urlLoader);
   }
 
   /**
@@ -80,13 +84,13 @@ public class DacapoClassLoader extends URLClassLoader {
    * @param factory
    */
   public DacapoClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
-    super(urls, parent, factory);
+      this(urls, parent);
   }
 
   /**
    * Get a list of jars (if any) which should be in the classpath for this
    * benchmark
-   * 
+   *
    * @param config The config file for this benchmark, which lists the jars
    * @param scratch The scratch directory, in which the jars will be located
    * @return An array of URLs, one URL for each jar
@@ -109,23 +113,23 @@ public class DacapoClassLoader extends URLClassLoader {
    * classes first. This way, libraries packaged with the benchmarks override
    * those provided by the runtime environment.
    */
-  @Override
-  protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-    // First, check if the class has already been loaded
-    Class<?> c = findLoadedClass(name);
-    if (c == null) {
-      try {
+  // @Override
+  // protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+  //   // First, check if the class has already been loaded
+  //   Class<?> c = findLoadedClass(name);
+  //   if (c == null) {
+  //     try {
 
-        // Next, try to resolve it from the dacapo JAR files
-        c = super.findClass(name);
-      } catch (ClassNotFoundException e) {
-        // And if all else fails delegate to the parent.
-        c = super.loadClass(name, resolve);
-      }
-    }
-    if (resolve) {
-      resolveClass(c);
-    }
-    return c;
-  }
+  //       // Next, try to resolve it from the dacapo JAR files
+  //       c = super.findClass(name);
+  //     } catch (ClassNotFoundException e) {
+  //       // And if all else fails delegate to the parent.
+  //       c = super.loadClass(name, resolve);
+  //     }
+  //   }
+  //   if (resolve) {
+  //     resolveClass(c);
+  //   }
+  //   return c;
+  // }
 }
